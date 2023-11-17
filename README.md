@@ -1,1 +1,1 @@
-# academic-tools
+# academic-apps-scripts
