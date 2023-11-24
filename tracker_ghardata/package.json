@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "push/dev": "clasp-env --folder . --scriptId 1C-_lODcizqVx-YUmAn_7CQkXZ5_HTv3gDzYlEPkb2pObuqdLVWE1tWnL && clasp push -w",
+    "push/prod": "clasp-env --folder . --scriptId 1HSH3nIoKu0QF6r9Ibr68-qZaeS9TTeQUOEgKGQIddANuJIamgROEqOL0 && clasp push -w"
+  }
+}
