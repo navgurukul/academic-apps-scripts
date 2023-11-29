@@ -1,5 +1,3 @@
-function myFunction() {
- 
 function fetchHTTPResponse(url, options) {
   logEvent("In fetchHTTPResponse: Fetching url -" + url, LOG_LEVEL_DEBUG);
   var response = UrlFetchApp.fetch(url, options);
@@ -41,9 +39,7 @@ function fetchSavedStudentIds() {
   } else
     return null;
 }
-
-
-
+ 
 function getActiveSs() {
   return SpreadsheetApp.getActiveSpreadsheet();
 }
@@ -228,19 +224,12 @@ function fetchCellValue(sheet_name, range) {
   return getSheet(sheet_name).getRange(range).getValue();
 }
 
-
-
-
-
-
 function addDataToSheet(data, sheet_name) {
   var sheet = getSheet(sheet_name);
   var lastRow = sheet.getLastRow();
   sheet.getRange(lastRow + 1,1,data.length, data[0].length).setValues(data);
 }
 
-
-// don't have about it that mush 
 function onOpen() {
   SpreadsheetApp.getUi().createMenu("Custom Filter")
     .addItem("Filter rows", "filterRows")
@@ -248,8 +237,6 @@ function onOpen() {
     .addToUi();
 }
 
-
-// Can use 
 function getIndexFromColumn(column) {
   var A = "A".charCodeAt(0);
   var number = column.charCodeAt(column.length-1) - A;
@@ -259,11 +246,6 @@ function getIndexFromColumn(column) {
   return number;
 }
 
-
-
-// can use multiple times 
 function fetchFilterValues() {
     return fetchCellValue(getDummySheetName(), "A5").split(',');
-}
-
 }
