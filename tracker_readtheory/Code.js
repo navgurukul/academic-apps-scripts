@@ -216,18 +216,16 @@ function fetchStudentData(processData, function_data) {
 }
 
 function getStudentClassData(classIds, classes) {
-  console.log(classIds);
-  console.log(classes);
   let student_classes = "";
   let student_class_max = "";
+  let max = -1;
   for (let i in classIds) {
-    let classId = (classIds[i]);
-    let max = -1;
+    let classId = classIds[i];
     for (let j in classes) {
       let clas = classes[j];
       if (clas.id === classId) {
         student_classes = [student_classes, clas.name].filter(Boolean).join(", ");
-        if (clas.students > max) {
+        if (clas.students && clas.students > max) {
           max = clas.students;
           student_class_max = clas.name;
         }
@@ -235,12 +233,11 @@ function getStudentClassData(classIds, classes) {
       }
     }
   }
-  console.log(student_classes);
-  console.log(student_class_max);
   return [student_classes, student_class_max];
 }
 
 function getStudentdData(index, classes) {
+  Logger.log(index);
   let [student_classes, student_class_max] = getStudentClassData(index.classIds, classes);
   let result = [
     index.studentId.toString(),
@@ -289,9 +286,10 @@ function addDataToSheet(data, sheet_name) {
 }
 
 function getTodaysDate() {
-  const dateTimeInParts = new Date().toISOString().split("T");
-  const date = dateTimeInParts[0]; // "2021-08-31"
-  return date;
+  var date = new Date(); // Or the date you'd like converted.
+  var isoDateTime = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString();
+  const dateTimeInParts = isoDateTime.split("T");
+  return dateTimeInParts[0];
 }
 
 function copyDataBetweenSheets(source, destination) {
@@ -303,7 +301,6 @@ function copyDataBetweenSheets(source, destination) {
   destinationRange.clear();
   destinationRange.setValues(valuesToCopy);
 }
-
 
 function updateStudentData() {
   const date = getTodaysDate();
@@ -334,7 +331,6 @@ function updateStudentData() {
   }
   fetchStudentData(addDataToSheet, date);
   copyDataBetweenSheets(date, "latest");
-  //TODO: Copy this data to the latest sheet.
 }
 
 function fetchClassData(token, teacherId) {
