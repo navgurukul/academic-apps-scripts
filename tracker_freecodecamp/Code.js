@@ -1,10 +1,16 @@
-function getUsernames() {
-  const sheetName = 'SHEET_NAME'; // to be replaced with sheet name
-  const columnIndex = COLUMN_INDEX; // to be replaced with index of columns that return usernames
-  const sheet = SpreadsheetApp.openById(sheetId).getSheetByName(sheetName);
-  const usernames = sheet.getRange(1, columnIndex, sheet.getLastRow(), 1).getValues().flat();
-  //Logger.log('Usernames:', usernames);
-  return usernames;
+const MAPPING_TAB = "Mapping";
+const DATA_TAB = "Duplicate";
+
+function getCourseColumn() {
+    return 2;
+}
+
+function getChallengeColumn() {
+  return 4;
+}
+
+function getUserNameColumn() {
+  return 2;
 }
 
 function getUserProfileByUsername(username) {
@@ -12,40 +18,92 @@ function getUserProfileByUsername(username) {
   const apiUrl = apiEndpoint + username;
   const response = UrlFetchApp.fetch(apiUrl);
   const userProfile = JSON.parse(response.getContentText());
-  //Logger.log('User Profile:', userProfile);
   return userProfile;
 }
 
-function createSheetWithColumns(sheetName, columnNames) {
-  const sheetId = 'SHEET_ID';
-  const newSheet = SpreadsheetApp.create(sheetName);
-  const sheet = SpreadsheetApp.openById(newSheet.getId()).getActiveSheet();
-  sheet.appendRow(columnNames);
-  //Logger.log(`Sheet '${sheetName}' created with columns: ${columnNames.join(', ')}`);
-  return sheet;
+function updateStudentData() {
+  const courseNames = getColumnData(MAPPING_TAB, getCourseColumn());
+  const challengeIds = getColumnData(MAPPING_TAB, getChallengeColumn());
+  const uniqueCourses = Array.from(new Set(courseNames));  
+
+  courseNames.shift();
+  challengeIds.shift();
+  uniqueCourses.shift();
+
+  //TODO: The DATA TAB should first be cleared beofre proceeding further. 
+  updateRowValues(DATA_TAB, 1, 1, uniqueCourses.length + 2, ['Name', 'Username'].concat(uniqueCourses));
+
+  const courseSize = uniqueCourses.length;
+  const thisMap = createArrayUpToN(courseSize - 1);
+  const lockedProfiles = Array(courseSize).fill('Locked');
+  const courseMap = generateHashMap(uniqueCourses, thisMap);
+  const users = getColumnData(DATA_TAB, getUserNameColumn());
+  users.shift();
+
+  idToNameMap = generateHashMap(challengeIds, courseNames);
+  var rowNumber = 2;
+  for (let i in users) {
+    var profile = getUserProfileByUsername(users[i]);
+    if ('isLocked' in profile['entities']['user'][users[i]]) {
+      updateRowValues(DATA_TAB, rowNumber, 3, courseSize + 2, lockedProfiles);
+      rowNumber += 1;
+    } else {
+      var completedChallenges = profile['entities']['user'][users[i]]['completedChallenges'];
+      var row = Array(courseSize).fill(0);
+      for (let val of completedChallenges) {
+        var foundId = val['id'];
+        if (foundId in idToNameMap) {
+          var foundName = idToNameMap[foundId];
+          row[courseMap[foundName]] += 1;
+        }
+      }
+      updateRowValues(DATA_TAB, rowNumber, 3, courseSize + 2, row);
+      rowNumber += 1;
+    }
+  }
 }
 
-function updateRowValues(sheetId, sheetName, rowIndex, startColumnIndex, endColumnIndex, newValues) {
-  var spreadsheet = SpreadsheetApp.openById(sheetId);
+function getColumnData(tabName, col) {
+  let tab = getTab(tabName);
+  const range = getColumnLetters(col) + "1:" + getColumnLetters(col) + tab.getLastRow();
+  return fetchCellValues(tabName, range)
+}
 
-  var sheet = spreadsheet.getSheetByName(sheetName);
+function getActiveSs() {
+  return SpreadsheetApp.getActiveSpreadsheet();  
+}
 
-  var range = sheet.getRange(rowIndex, startColumnIndex, 1, endColumnIndex - startColumnIndex + 1);
+function getTab(name) {
+  var ss = getActiveSs();
+  return ss.getSheetByName(name); //The name of the sheet tab where you are sending the info
+}
 
+function fetchValuesInRange(tabName, range) {
+  Logger.log(tabName);
+  Logger.log(range);
+  return getTab(tabName).getRange(range).getValues();
+}
+
+function fetchCellValues(tab, range) {
+  var values = fetchValuesInRange(tab, range);
+  var result = [];
+  for (var row in values) {
+    for (var col in values[row]) {
+      if (values[row][col])
+        result.push(values[row][col]);
+    }
+  }
+  // Logger.log(result);
+  return result;
+}
+
+function updateRowValues(tabName, rowIndex, startColumnIndex, endColumnIndex, newValues) {
+  let tab = getTab(tabName);
+  var range = tab.getRange(rowIndex, startColumnIndex, 1, endColumnIndex - startColumnIndex + 1);
   range.setValues([newValues]);
-
-  //Logger.log('Updated row ' + rowIndex + ' in sheet ' + sheetName + ' from column ' + startColumnIndex + ' to ' + endColumnIndex);
-}
-
-function getColumnData(sheetId, sheetName, columnIndex) {
-  const sheet = SpreadsheetApp.openById(sheetId).getSheetByName(sheetName);
-  const range = sheet.getRange(1, columnIndex, sheet.getLastRow(), 1);
-  const values = range.getValues().flat().filter(String);
-  return values;
 }
 
 function generateHashMap(keys, values) {
-
   if (keys.length !== values.length) {
     throw new Error('Key and value columns must have the same number of rows.');
   }
@@ -53,68 +111,28 @@ function generateHashMap(keys, values) {
   for (let i = 0; i < keys.length; i++) {
     hashMap[keys[i]] = values[i];
   }
-  //Logger.log('Generated Hashmap:', hashMap);
   return hashMap;
 }
 
 function createArrayUpToN(n) {
   var resultArray = [];
-
   for (var i = 0; i <= n; i++) {
     resultArray.push(i);
   }
-
   return resultArray;
 }
 
-function updateStudentData() {
-
-  const sheetId = '1IyXX6yKqYGrTIBLdAcnmW6cI_xqavuY6cR2je-soKBY';
-
-  //const certifications = getColumnData(sheetId,'Mapping',1);
-  const courses = new Set(getColumnData(sheetId, 'Mapping', 2));
-  var uniqueCourses = Array.from(courses);
-  uniqueCourses.shift();
-  const courseName = getColumnData(sheetId, 'Mapping', 2);
-  const challengeId = getColumnData(sheetId, 'Mapping', 4);
-  challengeId.shift()
-  courseName.shift()
-
-  updateRowValues(sheetId, 'Duplicate', 1, 1, uniqueCourses.length + 2, ['Name', 'Username'].concat(uniqueCourses));
-  idToNameMap = generateHashMap(challengeId, courseName);
-
-  const users = getColumnData(sheetId, 'Duplicate', 2);
-  users.shift();
-  const size = uniqueCourses.length;
-  const thisMap = createArrayUpToN(size - 1);
-  const lockedProfiles = Array(size).fill('Locked');
-  const courseMap = generateHashMap(uniqueCourses, thisMap);
-
-  var rowNumber = 2;
-  for (let i in users) {
-    var profile = getUserProfileByUsername(users[i]);
-    if ('isLocked' in profile['entities']['user'][users[i]]) {
-      updateRowValues(sheetId, 'Duplicate', rowNumber, 3, size + 2, lockedProfiles);
-      rowNumber += 1;
-      continue;
+function getColumnLetters(columnIndexStartFromOne) {
+  const ALPHABETS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+  if (columnIndexStartFromOne < 27) {
+    return ALPHABETS[columnIndexStartFromOne - 1];
+  } else {
+    var res = columnIndexStartFromOne % 26;
+    var div = Math.floor(columnIndexStartFromOne / 26);
+    if (res === 0) {
+      div = div - 1;
+      res = 26;
     }
-    var completedChallenges = profile['entities']['user'][users[i]]['completedChallenges'];
-    var row = Array(size).fill(0);
-    for (let val of completedChallenges) {
-      var foundId = val['id'];
-      if (foundId in idToNameMap) {
-        var foundName = idToNameMap[foundId];
-        row[courseMap[foundName]] += 1;
-      }
-    }
-    // Logger.log(row);
-    // Logger.log(i+2);
-    updateRowValues(sheetId, 'Duplicate', rowNumber, 3, size + 2, row);
-    rowNumber += 1;
+    return getColumnLetters(div) + ALPHABETS[res - 1];
   }
 }
-
-
-
-
-
