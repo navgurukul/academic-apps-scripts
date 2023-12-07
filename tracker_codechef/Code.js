@@ -5,6 +5,7 @@ function test() {
   //updateRatingsNew("team");
   //updateStudentData('START109');
   Logger.log(fetchRating('vijayalakshmi23'));
+  Logger.log(fetchRating('anup'));
 }
 
 function updateRatingForEveryOne() {
@@ -30,16 +31,21 @@ function fetchRating(user) {
   let ratingURL = "https://www.codechef.com/users/" + user;
   var options = {
     "method": "GET",
-    'headers': {'User-Agent': 'PostmanRuntime/7.32.2'}, 
+    'headers': { 'User-Agent': 'PostmanRuntime/7.32.2' },
     "muteHttpExceptions": true
   };
   rating_page = fetchHTTPResponse(ratingURL, options);
-  //console.log(rating_page.getContentText());
-  const $ = Cheerio.load(rating_page.getContentText());
-  let rating = ($('div.content > div:first-of-type >').text()).split(" ")[0].split("(")[0]
-  if (rating.indexOf('?') != -1) {
-    rating = rating.split("?")[0];
-  } 
+  let response_text = rating_page.getContentText();
+  let rating = null;
+  if (response_text.indexOf('"currentUser":"' + user + '"') !== -1) {
+    const $ = Cheerio.load(rating_page.getContentText());
+    rating = ($('div.content > div:first-of-type >').text()).split(" ")[0].split("(")[0]
+    if (rating.indexOf('?') != -1) {
+      rating = rating.split("?")[0];
+    }
+  } else {
+    rating = "Invalid User";
+  }
   return rating;
 }
 
