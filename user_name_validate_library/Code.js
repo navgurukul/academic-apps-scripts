@@ -1,7 +1,3 @@
-function getTabName(){
-  return "3-Online Profile"
-}
-
 function checkHeader(editedRange, tab, headerData) {
   var headermap = {}
   for (var i = 0; i < headerData[0].length; i++) {
@@ -9,39 +5,37 @@ function checkHeader(editedRange, tab, headerData) {
   }
   var sheetName = editedRange.getSheet().getName();
   var editcell = editedRange.getA1Notation()
-  var res = -1;
-  for (var i = 2; i <= tab.getLastRow(); i++)
-    if (sheetName === getTabName()) {
-      if (headermap['Codechef'] + i === editcell) {
-        res = checkUserName("https://www.codechef.com/users/", tab.getRange(headermap['Codechef'] + i).getValue());
-      } else if (headermap['Leetcode'] + i === editcell) {
-        res = checkUserName("https://leetcode.com/", tab.getRange(headermap['Codechef'] + i).getValue());
-      } else if (headermap['AtCoder'] + i === editcell) {
-        res = checkUserName("https://atcoder.jp/users/", tab.getRange(headermap['Codechef'] + i).getValue());
+  for (var i = 2; i <= tab.getLastRow(); i++){
+    if (headermap['Codechef'] + i === editcell) {
+      res = checkUserName("https://www.codechef.com/users/", tab.getRange(headermap['Codechef'] + i).getValue());
+      if (res.getResponseCode() === 200 && res.getContentText().indexOf('"currentUser":"' + tab.getRange(headermap['Codechef'] + i).getValue() + '"') !== -1) {
+        return "Valid userName";
+      } else {
+        return "Invalid userName";
       }
+    } else if (headermap['Leetcode'] + i === editcell) {
+      return checkUserName("https://leetcode.com/", tab.getRange(headermap['Leetcode'] + i).getValue()).getResponseCode() === 404 ? 0 : 1;
+
+    } else if (headermap['AtCoder'] + i === editcell) {
+      return checkUserName("https://atcoder.jp/users/", tab.getRange(headermap['AtCoder'] + i).getValue()).getResponseCode() === 404 ? 0 : 1;
     }
-  return res;
+  }
 }
 
 function checkUserName(api, userName) {
-  Logger.log(api + userName);
-  return check(api + userName) === 200 ? 200 : 0;
-}
-
-function check(api) {
   var options = {
     "method": "GET",
     'headers': { 'User-Agent': 'PostmanRuntime/7.32.2' },
     "muteHttpExceptions": true
   };
-  return fetchHTTPResponse(api, options);
+  return fetchHTTPResponse(api + userName, options);
 }
 
 function fetchHTTPResponse(url, options) {
   Logger.log(url)
   Logger.log("In fetchHTTPResponse: Fetching url - %s", url);
   var response = UrlFetchApp.fetch(url, options);
-  return response.getResponseCode();;
+  return response;
 }
 
 function generateHashMap(keys, values) {
