@@ -1,17 +1,13 @@
-function checkHeader(editedRange, tab, headerData) {
-  var headermap = {}
-  for (var i = 0; i < headerData[0].length; i++) {
-    headermap[headerData[0][i]] = getColumnLetters(i + 1);
-  }
-  var sheetName = editedRange.getSheet().getName();
+function validate(editedRange, tab, headerData) {
+  var headermap =generateHashMap(headerData)
   var editcell = editedRange.getA1Notation()
-  for (var i = 2; i <= tab.getLastRow(); i++){
+  for (var i = 2; i <= tab.getLastRow(); i++) {
     if (headermap['Codechef'] + i === editcell) {
       res = checkUserName("https://www.codechef.com/users/", tab.getRange(headermap['Codechef'] + i).getValue());
       if (res.getResponseCode() === 200 && res.getContentText().indexOf('"currentUser":"' + tab.getRange(headermap['Codechef'] + i).getValue() + '"') !== -1) {
-        return "Valid userName";
+        return 1;
       } else {
-        return "Invalid userName";
+        return 0;
       }
     } else if (headermap['Leetcode'] + i === editcell) {
       return checkUserName("https://leetcode.com/", tab.getRange(headermap['Leetcode'] + i).getValue()).getResponseCode() === 404 ? 0 : 1;
@@ -20,6 +16,8 @@ function checkHeader(editedRange, tab, headerData) {
       return checkUserName("https://atcoder.jp/users/", tab.getRange(headermap['AtCoder'] + i).getValue()).getResponseCode() === 404 ? 0 : 1;
     }
   }
+  return -2;
+
 }
 
 function checkUserName(api, userName) {
@@ -38,13 +36,13 @@ function fetchHTTPResponse(url, options) {
   return response;
 }
 
-function generateHashMap(keys, values) {
-  if (keys.length !== values.length) {
+function generateHashMap(keys) {
+  if (keys.length==Null) {
     throw new Error('Key and value columns must have the same number of rows.');
   }
   const hashMap = {};
   for (let i = 0; i < keys.length; i++) {
-    hashMap[keys[i]] = values[i];
+    hashMap[keys[i]] = getColumnLetters(i+1);
   }
   return hashMap;
 }
