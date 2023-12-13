@@ -1,67 +1,52 @@
-function validate(editedRange, tab, headerData) {
-  var headermap =generateHashMap(headerData)
-  var editcell = editedRange.getA1Notation()
-  for (var i = 2; i <= tab.getLastRow(); i++) {
-    if (headermap['Codechef'] + i === editcell) {
-      res = checkUserName("https://www.codechef.com/users/", tab.getRange(headermap['Codechef'] + i).getValue());
-      if (res.getResponseCode() === 200 && res.getContentText().indexOf('"currentUser":"' + tab.getRange(headermap['Codechef'] + i).getValue() + '"') !== -1) {
-        return 1;
-      } else {
-        return 0;
-      }
-    } else if (headermap['Leetcode'] + i === editcell) {
-      return checkUserName("https://leetcode.com/", tab.getRange(headermap['Leetcode'] + i).getValue()).getResponseCode() === 404 ? 0 : 1;
-
-    } else if (headermap['AtCoder'] + i === editcell) {
-      return checkUserName("https://atcoder.jp/users/", tab.getRange(headermap['AtCoder'] + i).getValue()).getResponseCode() === 404 ? 0 : 1;
-    }
+function validateUserName(userName, site) {
+  if (site == "CC") {
+    return validateCCUsername(userName);
   }
-  return -2;
-
+  if (site == "AC") {
+    return validateACUsername(userName);
+  }
+  if (site == "LC") {
+    return validateLCUsername(userName);
+  }
+  if (site == "FCC") {
+    return validateFCCUsername(userName);
+  }
 }
 
-function checkUserName(api, userName) {
+function validateCCUsername(userName) {
+  res = checkUserName("https://www.codechef.com/users/"+userName);
+  if (res.getResponseCode() === 200 && res.getContentText().indexOf('"currentUser":"' + userName+ '"') !== -1) {
+    return "Valid";
+  } else {
+    return "Invalid";
+  }
+}
+
+function validateACUsername(userName){
+  return checkUserName("https://leetcode.com/"+userName).getResponseCode()!==404?"Valid":"Invalid";
+}
+
+function validateLCUsername(userName){
+  return checkUserName("https://atcoder.jp/users/"+userName).getResponseCode()!==404?"Valid":"Invalid";
+}
+
+function validateFCCUsername(userName){
+  return checkUserName("https://www.freecodecamp.org/"+userName).getResponseCode()!==404?"Valid":"Invalid";
+}
+
+function checkUserName(url){
   var options = {
     "method": "GET",
     'headers': { 'User-Agent': 'PostmanRuntime/7.32.2' },
     "muteHttpExceptions": true
   };
-  return fetchHTTPResponse(api + userName, options);
+  return fetchHTTPResponse(url,options);
 }
 
 function fetchHTTPResponse(url, options) {
-  Logger.log(url)
   Logger.log("In fetchHTTPResponse: Fetching url - %s", url);
+  //Logger.log(options);
   var response = UrlFetchApp.fetch(url, options);
+  Logger.log(response.getResponseCode());
   return response;
-}
-
-function generateHashMap(keys) {
-  if (keys.length==Null) {
-    throw new Error('Key and value columns must have the same number of rows.');
-  }
-  const hashMap = {};
-  for (let i = 0; i < keys.length; i++) {
-    hashMap[keys[i]] = getColumnLetters(i+1);
-  }
-  return hashMap;
-}
-
-function fetchValuesInRange(sheet_name, range) {
-  return sheet_name.getRange(range).getValues();
-}
-
-function getColumnLetters(columnIndexStartFromOne) {
-  const ALPHABETS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
-  if (columnIndexStartFromOne < 27) {
-    return ALPHABETS[columnIndexStartFromOne - 1];
-  } else {
-    var res = columnIndexStartFromOne % 26;
-    var div = Math.floor(columnIndexStartFromOne / 26);
-    if (res === 0) {
-      div = div - 1;
-      res = 26;
-    }
-    return getColumnLetters(div) + ALPHABETS[res - 1];
-  }
 }
