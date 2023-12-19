@@ -1,164 +1,86 @@
-// <<------------------- Here is the code for adding problem code on tracker ---------------------->> 
+function getDecriptionName() {
+  return "Description";
+}
 
+function getDataSheetName() {
+  return "Data";
+}
 
-// Checking the uniq value for add 
-function uniq(old, newValue) {
+function getValidationSheetName() {
+  return "Data Validation";
+}
 
-  if (old.length === 0) {
-    return null;
-  }
-  var deff = newValue.filter(char => !old.includes(char));
-  return deff;
+function getDummySheetName() {
+  return "Dummy Sheet";
+}
+
+function getMetaSheetName() {
+  return "meta";
+}
+
+function getTrackerName() {
+  return "Tracker";
+}
+
+function fetchDataFromTracker(tabName, range) {
+  const values = fetchCellValues(tabName, range);
+  return values;
+}
+
+function getProblemsCodeAndSec(problemsCode, section) {
+  var data = [problemsCode, section];
+  return data;
+}
+
+function getProblemsFromDb() {
+  var problems = fetchCellValues(getDecriptionName(), "A2:A");
+  var section = fetchCellValues(getDecriptionName(), "C2:C");
+  return getProblemsCodeAndSec(problems, section);
+}
+
+function getProblemsFromTracker() {
+  var columnIndex = getLastCol(getTrackerName());
+  var problemsCodeCellRangeInTracker = "D1:" + getColumnLetters(columnIndex) + "1";
+  var problems = fetchCellValues(getTrackerName(), problemsCodeCellRangeInTracker);
+  var sectionCellRangeInTracker = "D2:" + getColumnLetters(columnIndex) + "2";
+  var section = fetchCellValues(getTrackerName(), sectionCellRangeInTracker);
+  return getProblemsCodeAndSec(problems, section);
 
 }
 
-
-// <----- this code basic to get the last range for col 
-function getLastCell(n) {
-  const arr = [
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
-    'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-    'U', 'V', 'W', 'X', 'Y', 'Z'
-  ];
-
-  if (n <= 0) {
-    return "";
-  }
-
-  let result = "";
-  const base = 'A'.charCodeAt(0);
-  while (n > 0) {
-    const remainder = (n - 1) % 26;
-    result = String.fromCharCode(base + remainder) + result;
-    n = Math.floor((n - 1) / 26);
-  }
-
-  return result;
+function getLastCol(tabName) {
+  return SpreadsheetApp.getActiveSpreadsheet().getSheetByName(tabName).getLastColumn();
 }
 
+function updateTrackerForCode() {
+  var dBproblems = getProblemsFromDb();
+  var trackerProblems = getProblemsFromTracker();
+  if(trackerProblems[0].length != 0){
+      var newProblems = filterTheNewProblems(trackerProblems,dBproblems);
+      addProblemsToTracker(newProblems);
+  }else{
+    addProblemsToTracker(dBproblems);
+  }
+}
 
-
-function updateTrackerForCode(range) {
-  var problemsCodeValues = fetchCellValues("Description", "A1:A");
-  // Logger.log("problemsCodeValues:-",problemsCodeValues);
-  var newValues = [[]];
-  for (var i in problemsCodeValues) {
-    // Logger.log(problemsCodeValues[i])
-    if (problemsCodeValues[i].length > 0) {
-      newValues[0].push(problemsCodeValues[i]);
+function filterTheNewProblems(old,newData){
+  var newDataArr = [[],[]];
+  for(var i = 0;i<newData[0].length;i++){
+    var data = newData[0][i];
+    if(old[0].indexOf(data) === -1){
+      newDataArr[0].push(data);
+      newDataArr[1].push(newData[1][i]);
     }
   }
-
-  var range = getLastCell((newValues[0].length) + 2);
-  Logger.log("Range:- " + range);
-
-  var problemsTopics = fetchCellValues("Tracker", `D1:${range}1`)
-  // Logger.log(problemsTopics);
-  // return
-  var oldValues = [[]];
-  for (var i in problemsTopics) {
-    // Logger.log(problemsCodeValues[i])
-    if (problemsTopics[i].length > 0) {
-      oldValues[0].push(problemsTopics[i]);
-    }
-  }
-
-  oldValues[0].sort();
-  newValues[0].sort();
-
-  var valuesForAdd = uniq(oldValues[0], newValues[0]);
-  var sub = getActiveSs().getSheetByName("Tracker");
-  if (valuesForAdd == null) {
-    sub.getRange("C1:C1").setValue(newValues[0][newValues[0].length - 1])
-    var slicedArray = newValues[0].slice(0, newValues[0].length - 1);
-    newValues[0] = slicedArray;
-    Logger.log(slicedArray.length);
-    sub.getRange(`D1:${getLastCell(slicedArray + 1)}1`).setValues(newValues);
-  }
-  else {
-
-    var range22 = getLastCell(oldValues[0].length + 4);
-    console.log(valuesForAdd);
-    var slicedArray = valuesForAdd.slice(0, valuesForAdd.length - 1);
-    var range21 = `${range22}1:${getLastCell((oldValues[0].length + 3 + slicedArray.length))}1`;
-    Logger.log(range21);
-    Logger.log(slicedArray);
-    var range33 = sub.getRange(range21);
-    range33.setValues([slicedArray])
-  }
-  fetchDBData()
-
+  return newDataArr;
 }
 
-// <---------------------------------- End-Here(Adding problems Code on tracker) -------------------------------> 
-
-
-
-// <---------------------------------- Adding Problems sub-topic ------------------------------------------------>> 
-
-
-function fetchDBData() {
-  var values = fetchValuesInRange("Description", "A:D");
-  // Logger.log(values);
-
-  var result = {};
-  for (var row in values) {
-    // Logger.log(values[row])
-    if (values[row].length > 0) result[values[row][0]] = values[row][2];
-  }
-
-
-  const objectLength = Object.keys(result).length;
-  var dataRange = generateRangeString(3, objectLength + 1).split(',');
-  Logger.log(dataRange);
-  var subSheet = getActiveSs().getSheetByName("Tracker");
-  for (var i = 0; i < dataRange.length; i++) {
-    var range = `${dataRange[i]}1:${dataRange[i]}1`;
-    var range22 = `${dataRange[i]}2:${dataRange[i]}2`;
-    Logger.log(range22);
-    getSheet("Tracker").getRange(range22).setValue(result[fetchValuesInRange("Tracker", range)[0][0]]);
-
-  }
-
+function addProblemsToTracker(valuesToAdd) {
+  var sheet = getSheet(getTrackerName());
+  var lastColumn = sheet.getLastColumn();
+  var range = sheet.getRange(1, lastColumn+1, 2, valuesToAdd[0].length); 
+  range.setValues(valuesToAdd);
 }
-
-
-
-
-
-
-
-function generateRangeString(n, m) {
-  if (n <= 0 || m < n) {
-    return "";
-  }
-
-  let result = "";
-  const base = 'A'.charCodeAt(0);
-
-  for (let i = n; i <= m; i++) {
-    let currentN = i;
-    let tempResult = "";
-
-    while (currentN > 0) {
-      const remainder = (currentN - 1) % 26;
-      tempResult = String.fromCharCode(base + remainder) + tempResult;
-      currentN = Math.floor((currentN - 1) / 26);
-    }
-
-    result += tempResult + ",";
-  }
-
-  // Remove the trailing comma
-  return result.slice(0, -1);
-}
-
-
-
-
-
-// <<-------------------------------End-Here (Adding Problems sub-topic) ------------------------------------------>>
-
 
 function fetchNewStudents(sheet) {
   var latestStudentEmailData = fetchStudentEmailData();
@@ -218,22 +140,6 @@ function filterRows(sheetname) {
   }
 }
 
-function getDataSheetName() {
-  return "Data";
-}
-
-function getValidationSheetName() {
-  return "Data Validation";
-}
-
-function getDummySheetName() {
-  return "Dummy Sheet";
-}
-
-function getMetaSheetName() {
-  return "meta";
-}
-
 function deleteInvalidStudents(students) {
   var values = fetchFilterValues();
   var remove = [];
@@ -255,7 +161,7 @@ function deleteInvalidStudents(students) {
 
 
 function updateSheet() {
-  var sheetname = "Tracker";
+  var sheetname = getTrackerName();
   var newStudents = fetchNewStudents(sheetname);
   console.log(newStudents);
   updateTrackerForCode(); // For adding the FC code and subtopic
@@ -263,7 +169,6 @@ function updateSheet() {
   console.log(newStudents);
   if (newStudents.length > 0) {
     last_row = addStudentsToSheet(newStudents, sheetname);
-    //Logger.log(last_row);
     for (var j in newStudents) {
       student = newStudents[j];
       Logger.log(student);
@@ -275,8 +180,7 @@ function updateSheet() {
 }
 
 function getIndexFromColumn(column) {
-  var A = "A".charCodeAt(0);
-  var number = column.charCodeAt(column.length - 1) - A;
+  var A = "A".charCodeAt(0); var number = column.charCodeAt(column.length - 1) - A;
   if (column.length == 2) {
     number += 26 * (colA1.charCodeAt(0) - A + 1);
   }
@@ -440,11 +344,12 @@ function getSheet(name) {
 }
 
 function fetchValuesInRange(sheet_name, range) {
+  SpreadsheetApp.flush();
   return getSheet(sheet_name).getRange(range).getValues();
 }
 
 function fetchCellValues(sheet_name, range) {
-  // Logger.log(sheet_name + " test " + range);
+  Logger.log(sheet_name + " test " + range);
   var values = fetchValuesInRange(sheet_name, range);
   // Logger.log(values);
   var result = [];
@@ -488,4 +393,18 @@ function filterAllSheets() {
   }
 }
 
+function getColumnLetters(columnIndexStartFromOne) {
+  const ALPHABETS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+  if (columnIndexStartFromOne < 27) {
+    return ALPHABETS[columnIndexStartFromOne - 1];
+  } else {
+    var res = columnIndexStartFromOne % 26;
+    var div = Math.floor(columnIndexStartFromOne / 26);
+    if (res === 0) {
+      div = div - 1;
+      res = 26;
+    }
+    return getColumnLetters(div) + ALPHABETS[res - 1];
+  }
+}
 
