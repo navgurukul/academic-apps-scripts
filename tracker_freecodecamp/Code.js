@@ -24,12 +24,12 @@ function getUserProfileByUsername(username) {
 function updateStudentData() {
   const courseNames = getColumnData(MAPPING_TAB, getCourseColumn());
   const challengeIds = getColumnData(MAPPING_TAB, getChallengeColumn());
-  const uniqueCourses = Array.from(new Set(courseNames));  
+  const uniqueCourses = Array.from(new Set(courseNames));
+  
 
   courseNames.shift();
   challengeIds.shift();
   uniqueCourses.shift();
-
   //TODO: The DATA TAB should first be cleared beofre proceeding further. 
   updateRowValues(DATA_TAB, 1, 1, uniqueCourses.length + 2, ['Name', 'Username'].concat(uniqueCourses));
 
@@ -39,6 +39,7 @@ function updateStudentData() {
   const courseMap = generateHashMap(uniqueCourses, thisMap);
   const users = getColumnData(DATA_TAB, getUserNameColumn());
   users.shift();
+  
 
   idToNameMap = generateHashMap(challengeIds, courseNames);
   var rowNumber = 2;
@@ -49,11 +50,20 @@ function updateStudentData() {
       rowNumber += 1;
     } else {
       var completedChallenges = profile['entities']['user'][users[i]]['completedChallenges'];
+      var idSet= {};
+      for (let ids of completedChallenges) {
+        if (idSet.hasOwnProperty(ids['id'])) {
+          idSet[ids['id']]+= 1;
+        }
+        else{
+          idSet[ids['id']] = 1;
+        }
+      }
       var row = Array(courseSize).fill(0);
-      for (let val of completedChallenges) {
-        var foundId = val['id'];
-        if (foundId in idToNameMap) {
-          var foundName = idToNameMap[foundId];
+      for (let val in idSet) {
+        var foundID = val;
+        if (foundID  in idToNameMap) {
+          var foundName = idToNameMap[foundID];
           row[courseMap[foundName]] += 1;
         }
       }
@@ -121,7 +131,25 @@ function createArrayUpToN(n) {
   }
   return resultArray;
 }
-
+function removeDuplicates(arr) {
+  var uniqueArray = [];
+  for (var i = 0; i < arr.length; i++) {
+    if ((arr[i] in uniqueArray)==false){
+      uniqueArray.push(arr[i]);
+    }
+  }
+  return uniqueArray;
+}
+function countOccurrences(a) {
+  var temp = {};
+  for (var i = 0; i < a.length; i++) {
+    if (!temp.hasOwnProperty(a[i])) {
+      temp[a[i]] = 0;
+    }
+    temp[a[i]] += 1;
+  }
+  return temp;
+}
 function getColumnLetters(columnIndexStartFromOne) {
   const ALPHABETS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
   if (columnIndexStartFromOne < 27) {
