@@ -1,0 +1,19 @@
+{
+  "timeZone": "Asia/Kolkata",
+  "dependencies": {
+    "libraries": [
+      {
+        "userSymbol": "ValidateusernameDev",
+        "version": "0",
+        "libraryId": "1cobS2Kq9-YT_umWXekXlFUGOFPntIKumL5vUmr3Ys-O0P84cWFAyWp-b",
+        "developmentMode": true
+      }
+    ]
+  },
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+   "oauthScopes": [
+      "https://www.googleapis.com/auth/spreadsheets.readonly",
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/spreadsheets"]
+}
