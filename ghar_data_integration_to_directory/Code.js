@@ -71,9 +71,9 @@ function updateStudentsData(dirSpreadSheetID, tabName) {
   var gharHeaderMap = genrateHeaderMap(gharHeader);
   gharSaveData = gharSaveData.slice(1, gharSaveData.length);
   var [newStudentsData, oldStudents] = uniq(dirDataMap, dirHeaderMap, gharSaveData, gharHeaderMap);
-  // if (oldStudents) {
-  //   updateData(oldStudents, gharHeaderMap, dirDataMap, dirHeaderMap);
-  // }
+  if (oldStudents) {
+    updateData(oldStudents, gharHeaderMap, dirDataMap, dirHeaderMap);
+  }
   if (newStudentsData) {
     addStudents(newStudentsData, gharHeaderMap, dirHeaderMap, dirSpreadSheetID, tabName, getLengthOfObject(dirDataMap) + 2)
   }
@@ -107,7 +107,7 @@ function getKeyMap(gharHeader) {
 }
 function updateData(oldStudents, gharHeader, dirDataMap, dirHeaderMap) {
   var key = findSearchKey(gharHeader, "Navgurukul's Email I'd");
-  map = getKeyMap();
+  map = getKeyMap(gharHeader);
   var keys = Object.keys(gharHeader);
   var dirSpId = getCopyDirID();
   var tab = getTabName();
