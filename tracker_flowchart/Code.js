@@ -55,19 +55,19 @@ function getLastCol(tabName) {
 function updateTrackerForCode() {
   var dBproblems = getProblemsFromDb();
   var trackerProblems = getProblemsFromTracker();
-  if(trackerProblems[0].length != 0){
-      var newProblems = filterTheNewProblems(trackerProblems,dBproblems);
-      addProblemsToTracker(newProblems);
-  }else{
+  if (trackerProblems[0].length != 0) {
+    var newProblems = filterTheNewProblems(trackerProblems, dBproblems);
+    newProblems[0].length >= 1 ? addProblemsToTracker(newProblems) : console.log(newProblems);
+  } else {
     addProblemsToTracker(dBproblems);
   }
 }
 
-function filterTheNewProblems(old,newData){
-  var newDataArr = [[],[]];
-  for(var i = 0;i<newData[0].length;i++){
+function filterTheNewProblems(old, newData) {
+  var newDataArr = [[], []];
+  for (var i = 0; i < newData[0].length; i++) {
     var data = newData[0][i];
-    if(old[0].indexOf(data) === -1){
+    if (old[0].indexOf(data) === -1) {
       newDataArr[0].push(data);
       newDataArr[1].push(newData[1][i]);
     }
@@ -78,7 +78,7 @@ function filterTheNewProblems(old,newData){
 function addProblemsToTracker(valuesToAdd) {
   var sheet = getSheet(getTrackerName());
   var lastColumn = sheet.getLastColumn();
-  var range = sheet.getRange(1, lastColumn+1, 2, valuesToAdd[0].length); 
+  var range = sheet.getRange(1, lastColumn + 1, 2, valuesToAdd[0].length);
   range.setValues(valuesToAdd);
 }
 
