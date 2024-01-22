@@ -116,9 +116,7 @@ function fetchNewStudents(sheet) {
 
 function filterRows(sheetname) {
   var index = getIndexForJobReadyColumn();
-  //Logger.log(index);
   var values = fetchFilterValues();
-  //Logger.log(values);
   var dataSheet = getSheet(getDataSheetName());
   var data = dataSheet.getDataRange().getValues();
   var currentSheet = getSheet(sheetname);
@@ -126,9 +124,7 @@ function filterRows(sheetname) {
   for (var i = 1; i < data.length; i++) {
     for (var j = 0; j < values.length; j++) {
       if (data[i][index].toUpperCase() === values[j].toUpperCase()) {
-        //Logger.log(data[i]);
         var email = data[i][getIndexFromColumn(fetchEmailColumn())];
-        //Logger.log(email);
         var isMatched = attendanceEmails.indexOf(email);
         if (isMatched !== -1) {
           Logger.log(values[j]);
@@ -162,7 +158,7 @@ function deleteInvalidStudents(students) {
 }
 
 
-function updateSheet(sp) {
+function updateTracker(sp) {
   spIn = sp;
   var sheetname = getTrackerName();
   var newStudents = fetchNewStudents(sheetname);
