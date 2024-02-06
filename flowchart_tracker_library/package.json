@@ -1,8 +1,8 @@
 {
   "scripts": {
-    "push/dev": "clasp-env --folder . --scriptId 1y1V2G5AcR32uZ4VfGB5f8JR6M46uK4GHCS4ute6c3VUPHOYW2hlq8QjW  && clasp push",
-    "push/prod": "clasp-env --folder . --scriptId 1axYIjjP8Ci5WFUmwEar27ejBaxbz0oCswLKuN_9dV0w9bIgoD-m66zaT && clasp push",
-    "pull/dev": "clasp-env --folder . --scriptId 1y1V2G5AcR32uZ4VfGB5f8JR6M46uK4GHCS4ute6c3VUPHOYW2hlq8QjW && clasp pull",
-    "pull/prod": "clasp-env --folder . --scriptId 1axYIjjP8Ci5WFUmwEar27ejBaxbz0oCswLKuN_9dV0w9bIgoD-m66zaT && clasp pull"
+    "push/dev": "clasp-env --folder . --scriptId 14A314HKGhtUthlX-yZsV5am8_1-D7UHibqjy0AGAHcYqthDETHyNandy  && clasp push",
+    "push/prod": "clasp-env --folder . --scriptId 19sa2N8Km-kgz-kBDZ2tPw2pdwOtP6DcNxOsVobROwkdQ-7phi3pjDS6c && clasp push",
+    "pull/dev": "clasp-env --folder . --scriptId 14A314HKGhtUthlX-yZsV5am8_1-D7UHibqjy0AGAHcYqthDETHyNandy && clasp pull",
+    "pull/prod": "clasp-env --folder . --scriptId 19sa2N8Km-kgz-kBDZ2tPw2pdwOtP6DcNxOsVobROwkdQ-7phi3pjDS6c && clasp pull"
   }
 }
