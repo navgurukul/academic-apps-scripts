@@ -1,3 +1,5 @@
+var sp = null;
+
 function getDecriptionName() {
   return "Description";
 }
@@ -120,7 +122,8 @@ function filterStudents(data1, data2, k1) {
   }
   return newdata;
 }
-function updateSheet() {
+function updateSheet(sp) {
+  sp = sp;
   var data = fetchData(getDataSheetName(), "A2:E");
   var filteredStudents = handleData(data);
   // console.log(filteredData);
@@ -204,7 +207,7 @@ function addStudentsToSheet(students, sheet_name) {
 }
 
 function getActiveSs() {
-  return SpreadsheetApp.getActiveSpreadsheet();
+  return sp;
 }
 
 function removeEmpty(data) {
